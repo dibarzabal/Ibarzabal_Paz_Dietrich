@@ -1,56 +1,44 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect } from "react";
 import Card from '../../components/Card/Card';
 import Loader from '../../components/Loader/Loader';
 
-class ResultadosBusqueda extends Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            resultados: [],
-            cargando: true
-        }
-    }
+function ResultadosBusqueda (props){
+   const [resultados, setResultados] = useState([]);
+  const [cargando, setCargando] = useState(true);
 
-    componentDidMount(){
-        let textoBuscado = this.props.match.params.busqueda;
+  useEffect(() => {
+    let textoBuscado = this.props.match.params.busqueda;
         let tipo = this.props.match.params.tipo;
 
         fetch(`https://api.themoviedb.org/3/search/${tipo}?api_key=41abfd625c63035603389ca24c10eed0&query=${textoBuscado}`)
             .then(response => response.json())
             .then(data => {
     if (data.results) {
-        this.setState({
-            resultados: data.results,
-            cargando: false
-        });
-    } else {
-        this.setState({
-            resultados: [],
-            cargando: false
-        });
-    }
-})
-            .catch(error => {
-                console.log("El error fue: " + error);
-                this.setState({
-                    resultados: [],
-                    cargando: false
-                });
-            });
-    }
-    
+         setResultados(data.results);
+          setCargando(false);
+        } else {
+          setResultados([]);
+          setCargando(false);
+        }
+    })
+           .catch(error => {
+        console.log("El error fue: " + error);
+        setResultados([]);
+        setCargando(false);
+      });
+  }, []);
 
-    render(){
+
         return(
             <section>
-                <h2>Resultados de {this.props.match.params.tipo} para: {this.props.match.params.busqueda}</h2>
+                <h2>Resultados de {props.match.params.tipo} para: {props.match.params.busqueda}</h2>
                 <section className="cards">
-                {this.state.cargando ? (
+                {cargando ? (
                     <h3><Loader/></h3>
-                ) : this.state.resultados.length === 0 ? (
+                ) : resultados.length === 0 ? (
                     <h3>No se encontraron resultados</h3>
                 ) : (
-                    this.state.resultados.map((elemento, idx) => (
+                resultados.map((elemento, idx) => (
                         <Card key={elemento.id} data={elemento}/>
                     ))
                 )}
@@ -58,6 +46,6 @@ class ResultadosBusqueda extends Component {
             </section>
         );
     }
-}
+
 
 export default ResultadosBusqueda;
