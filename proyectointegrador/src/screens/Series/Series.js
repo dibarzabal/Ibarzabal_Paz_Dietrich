@@ -1,73 +1,83 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "../../components/Card/Card";
 import Loader from "../../components/Loader/Loader";
 
-class Series extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      series: [],
-      page: 1,
-      texto: ""
-    };
-  }
-
+function Series() {
   
-  componentDidMount() {
-    this.cargarSeries();
+const [series, setSeries] = useState([]);
+  const [page, setPage] = useState(1);
+  const [texto, setTexto] = useState("");
+
+  useEffect(() => {
+
+ cargarSeries();
+  }, []);
+
+
+  function controlarCambios(event) {
+    setTexto(event.target.value);
+  }
   }
 
-   controlarCambios(event) {
-    this.setState({
-     texto: event.target.value
-    });
-  }
-
-  filtrarSeries() {
-  return this.state.series.filter((unaSerie) =>
-    unaSerie.name.toLowerCase().includes(this.state.texto.toLowerCase())
-  );
+  function filtrarSeries() {
+   return series.filter((unaSerie) =>
+      unaSerie.name.toLowerCase().includes(texto.toLowerCase())
+    );
 }
 
-  cargarSeries() {
-    fetch(`https://api.themoviedb.org/3/tv/popular?api_key=41abfd625c63035603389ca24c10eed0&page=${this.state.page}`)
-    .then(response => response.json())
-    .then(data => {
-      let nuevas = [];
+  function cargarSeries() {
+    fetch(`https://api.themoviedb.org/3/tv/popular?api_key=41abfd625c63035603389ca24c10eed0&page=${page}`)
+      .then(response => response.json())
+      .then(data => {
+        let nuevas = [];
 
-      for (let i = 0; i < this.state.series.length; i++) {
-        nuevas.push(this.state.series[i]);
-      }
+        for (let i = 0; i < series.length; i++) {
+          nuevas.push(series[i]);
+        }
 
-      for (let i = 0; i < data.results.length; i++) {
-        nuevas.push(data.results[i]);
-      }
+        for (let i = 0; i < data.results.length; i++) {
+          nuevas.push(data.results[i]);
+        }
 
-      this.setState({
-        series: nuevas
-      });
-    })
-    .catch(error => console.log("El error fue " + error));
+        setSeries(nuevas);
+      })
+      .catch(error => console.log("El error fue " + error));
   }
 
+  function cargarMas() {
+     let paginaNueva = page + 1;
 
-  cargarMas() {
-    this.setState(
-      {page: this.state.page + 1},
-      () => this.cargarSeries() 
-    )}
+    setPage(paginaNueva);
 
-  render() {
-    let seriesFiltradas = this.filtrarSeries();
+    fetch(`https://api.themoviedb.org/3/tv/popular?api_key=41abfd625c63035603389ca24c10eed0&page=${paginaNueva}`)
+      .then(response => response.json())
+      .then(data => {
+        let nuevas = [];
+
+        for (let i = 0; i < series.length; i++) {
+          nuevas.push(series[i]);
+        }
+
+        for (let i = 0; i < data.results.length; i++) {
+          nuevas.push(data.results[i]);
+        }
+
+        setSeries(nuevas);
+      })
+      .catch(error => console.log("El error fue " + error));
+  }
+
+  let seriesFiltradas = filtrarSeries();
+   
     return (
       <section className="container">
         <form className="search-form">
-        <input type="text" placeholder="Buscar..." value={this.state.texto} onChange={(event) => this.controlarCambios(event)}/>
+        <input type="text" placeholder="Buscar..." value={texto} onChange={(event) => controlarCambios(event)}/>
       </form>
         <h2 className="alert alert-warning">Todas las series</h2>
 
         <section className="row cards">
-          {this.state.series.length === 0 ? (<Loader />) : (
+          {series.length === 0 ? (<Loader />) : (
             seriesFiltradas.map((elemento, idx) => (<Card key={idx + elemento} data={elemento} />
             ))
           )}
@@ -75,7 +85,6 @@ class Series extends Component {
         <button onClick={() => this.cargarMas()} className="btn btn-primary"> Cargar más </button>
       </section>
     );
-  }
-}
+
 
 export default Series;
