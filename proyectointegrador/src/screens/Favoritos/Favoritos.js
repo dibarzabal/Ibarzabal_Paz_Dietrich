@@ -1,10 +1,10 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "../../components/Card/Card";
 import Cookies from "universal-cookie";
 
 const cookies = new Cookies();
 
-class Favoritos extends Component {
+function Favoritos(props) {
   constructor(props) {
     super(props);
     this.state = {
