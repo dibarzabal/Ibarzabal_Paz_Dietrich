@@ -5,15 +5,11 @@ import Cookies from "universal-cookie";
 const cookies = new Cookies();
 
 function Favoritos(props) {
-  constructor(props) {
-    super(props);
-    this.state = {
-      peliculasFavoritas: [],
-      seriesFavoritas: [],
-    };
-  }
+  const [peliculasFavoritas, setPeliculasFavoritas] = useState([]);
+  const [seriesFavoritas, setSeriesFavoritas] = useState([]);
 
-  componentDidMount() {
+  useEffect(() => {
+
     let user = cookies.get("session");
     
     if (user == null) {
@@ -30,12 +26,12 @@ function Favoritos(props) {
       fetch(`https://api.themoviedb.org/3/movie/${moviesParseado[i]}?api_key=41abfd625c63035603389ca24c10eed0`)
         .then(response => response.json())
         .then(data => {
-            let lista = this.state.peliculasFavoritas;
-            lista.push(data);
 
-            this.setState({
-                peliculasFavoritas: lista
-            });
+        let lista = peliculasFavoritas;
+          lista.push(data);
+
+          setPeliculasFavoritas(lista);
+
         })
         .catch(error => console.log(error));
     }
@@ -44,19 +40,20 @@ function Favoritos(props) {
       fetch(`https://api.themoviedb.org/3/tv/${seriesParseado[i]}?api_key=41abfd625c63035603389ca24c10eed0`)
         .then(response => response.json())
         .then(data => {
-          let lista = this.state.seriesFavoritas;
+
+          let lista = seriesFavoritas;
           lista.push(data);
 
-          this.setState({
-            seriesFavoritas: lista
-          });
+          setSeriesFavoritas(lista);
 
         })
         .catch(error => console.log(error));
     }
-  }
 
-  eliminarFavorito(id, tipo) {
+  }, []);
+
+
+  function eliminarFavorito(id, tipo) {
     if (tipo === "movie") {
       let storage = JSON.parse(localStorage.getItem("favoritosMovies"))
       if (storage == null){
@@ -72,14 +69,12 @@ function Favoritos(props) {
 
       localStorage.setItem("favoritosMovies", JSON.stringify(nuevo));
       let nuevasPeliculas = [];
-      for (let i = 0; i < this.state.peliculasFavoritas.length; i++) {
-        if (this.state.peliculasFavoritas[i].id !== id) {
-          nuevasPeliculas.push(this.state.peliculasFavoritas[i]);
+      for (let i = 0; i < peliculasFavoritas.length; i++) {
+        if (peliculasFavoritas[i].id !== id) {
+          nuevasPeliculas.push(peliculasFavoritas[i]);
         }}
 
-      this.setState({
-        peliculasFavoritas: nuevasPeliculas
-      });
+      setPeliculasFavoritas(nuevasPeliculas);
     } else {
       let data = JSON.parse(localStorage.getItem("favoritosSeries"));
       let storage = data ? data : [];
@@ -93,43 +88,40 @@ function Favoritos(props) {
       localStorage.setItem("favoritosSeries", JSON.stringify(nuevo));
 
       let nuevasSeries = [];
-      for (let i = 0; i < this.state.seriesFavoritas.length; i++) {
-        if (this.state.seriesFavoritas[i].id !== id) {
-          nuevasSeries.push(this.state.seriesFavoritas[i]);
+      for (let i = 0; i < seriesFavoritas.length; i++) {
+        if (seriesFavoritas[i].id !== id) {
+          nuevasSeries.push(seriesFavoritas[i]);
         }
       }
 
-      this.setState({
-        seriesFavoritas: nuevasSeries
-      });
+     setSeriesFavoritas(nuevasSeries);
     }
   }
+    }
+  
 
-  render() {
     return (
       <section className="cardContainer">
 
         <h2>Películas favoritas</h2>
         <section className="cards">
-        {this.state.peliculasFavoritas.length === 0 ? ( <h3>No hay películas favoritas</h3>) 
-        : (this.state.peliculasFavoritas.map(elemento => (
-              <Card key={elemento.id} data={elemento} eliminarFavorito={() => this.eliminarFavorito(elemento.id, "movie")}/>
+        {peliculasFavoritas.length === 0 ? ( <h3>No hay películas favoritas</h3>) 
+        : (peliculasFavoritas.map(elemento => (
+              <Card key={elemento.id} data={elemento} eliminarFavorito={() => eliminarFavorito(elemento.id, "movie")}/>
           ))
         )}
         </section>
 
         <h2>Series favoritas</h2>
         <section className="cards">
-        {this.state.seriesFavoritas.length === 0 ? (<h3>No hay series favoritas</h3>) 
-        : (this.state.seriesFavoritas.map(elemento => (
-              <Card key={elemento.id} data={elemento} eliminarFavorito={() => this.eliminarFavorito(elemento.id, "tv")}/>
+        {seriesFavoritas.length === 0 ? (<h3>No hay series favoritas</h3>) 
+        : (seriesFavoritas.map(elemento => (
+              <Card key={elemento.id} data={elemento} eliminarFavorito={() => eliminarFavorito(elemento.id, "tv")}/>
           ))
         )}
         </section>
 
       </section>
     );
-  }
-}
 
 export default Favoritos;
